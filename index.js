@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const { token: tokenGenerator } = require('./token');
+const middlewares = require('./middlewares');
 
 const app = express(); // Criada uma nova aplicação Express
 app.use(bodyParser.json());
@@ -35,13 +36,17 @@ app.get('/talker/:id', (request, response) => {
     .json({ message: 'Pessoa palestrante não encontrada' });
 });
 
+// app.use(middlewares.validationLogin);
+
 // 3 - Crie o endpoint POST /login
-app.post('/login', (_request, response) => {
+app.post('/login', middlewares.validationLogin, (_request, response) => {
   const token = tokenGenerator();
   response
     .status(HTTP_OK_STATUS)
     .json({ token });
 });
+
+// app.use(middlewares.errorHandler);
 
 app.listen(PORT, () => { // Pedir ao Express que crie um servidor HTTP e escute por requisições na porta 3000
   console.log('Online');
