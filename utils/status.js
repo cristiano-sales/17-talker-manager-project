@@ -5,6 +5,7 @@ const status = {
   INTERNAL_SERVER_ERROR: 500,
   INCORRECT_REQUEST: 400,
   CREATED_STATUS: 201,
+  NO_CONTENT_STATUS: 204,
 };
 
 module.exports = status;

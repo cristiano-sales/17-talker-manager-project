@@ -5,7 +5,12 @@ const { token: tokenGenerator } = require('./token');
 const middlewares = require('./middlewares');
 
 const talkerJsonPath = './talker.json';
-const { HTTP_OK_STATUS, NOT_FOUND_STATUS, CREATED_STATUS } = require('./utils/status');
+const {
+  HTTP_OK_STATUS,
+  NOT_FOUND_STATUS,
+  CREATED_STATUS,
+  NO_CONTENT_STATUS,
+} = require('./utils/status');
 
 const app = express(); // Criada uma nova aplicação Express
 app.use(bodyParser.json());
@@ -80,6 +85,15 @@ app.put('/talker/:id',
   fs.writeFileSync(talkerJsonPath, JSON.stringify(apiPUT), 'utf-8');
   response.status(HTTP_OK_STATUS).json(newOBJ);
  });
+
+app.delete('/talker/:id', middlewares.authorization, (request, response) => {
+  const { id: reqID } = request.params;
+  const filter = JSON.parse(fs.readFileSync('./talker.json'))
+    .filter(({ id }) => Number(id) !== Number(reqID));
+
+  fs.writeFileSync('./talker.json', JSON.stringify(filter), 'utf-8');
+  response.status(NO_CONTENT_STATUS).end();
+});
 
 // app.use(middlewares.errorHandler);
 
