@@ -3,13 +3,11 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const { token: tokenGenerator } = require('./token');
 const middlewares = require('./middlewares');
+const { HTTP_OK_STATUS, NOT_FOUND_STATUS, CREATED_STATUS } = require('./utils/status');
 
 const app = express(); // Criada uma nova aplicação Express
 app.use(bodyParser.json());
-
-const HTTP_OK_STATUS = 200;
 const PORT = '3000';
-const NOT_FOUND = 404;
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -32,7 +30,7 @@ app.get('/talker/:id', (request, response) => {
     .find(({ id }) => Number(id) === Number(identifier));
   if (idApi) return response.status(HTTP_OK_STATUS).json(idApi);
   response
-    .status(NOT_FOUND)
+    .status(NOT_FOUND_STATUS)
     .json({ message: 'Pessoa palestrante não encontrada' });
 });
 
@@ -45,6 +43,22 @@ app.post('/login', middlewares.validationLogin, (_request, response) => {
     .status(HTTP_OK_STATUS)
     .json({ token });
 });
+
+app.post('/talker',
+  middlewares.authorization,
+  middlewares.talkerRegister,
+  middlewares.talkFieldIsRequired,
+  middlewares.talkField,
+  (request, response) => {
+    const { name, age, talk } = request.body;
+    const api = JSON.parse(fs.readFileSync('./talker.json'));
+    const lastId = api[api.length - 1];
+    const id = lastId === undefined ? 0 : lastId.id + 1;
+    const newOBJ = { id, name, age, talk };
+    api.push(newOBJ);
+    fs.writeFileSync('./talker.json', JSON.stringify(api), 'utf-8');
+    response.status(CREATED_STATUS).json(newOBJ);
+  });
 
 // app.use(middlewares.errorHandler);
 
